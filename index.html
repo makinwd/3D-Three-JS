@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Three.js Example</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+      import {GLTFLoader} from 'https://threejsfundamentals.org/threejs/resources/threejs/r127/examples/jsm/loaders/GLTFLoader.js';
+      // Создаем сцену
+      const scene = new THREE.Scene();
+
+      // Создаем камеру
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.set(0, 0, 5);
+
+      // Создаем рендерер
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Создаем геометрические фигуры
+      const geometry1 = new THREE.BoxGeometry(1, 1, 1);
+      const material1 = new THREE.MeshStandardMaterial({ color: '#ff0000' });
+      const cube1 = new THREE.Mesh(geometry1, material1);
+      cube1.position.set(-1, 0, 0);
+      scene.add(cube1);
+
+      const geometry2 = new THREE.SphereGeometry(0.5, 32, 32);
+      const material2 = new THREE.MeshStandardMaterial({ color: '#00ff00' });
+      const sphere1 = new THREE.Mesh(geometry2, material2);
+      sphere1.position.set(1, 0, 0);
+      scene.add(sphere1);
+
+    //   Загружаем модель Дверь из дерева
+      const loader = new GLTFLoader();
+      loader.load('models/door.glb', (gltf) => {
+        const door = gltf.scene.children[0];
+        door.position.set(0, -1, 0);
+        scene.add(door);
+      });
+
+      // Создаем источник света
+      const light = new THREE.PointLight('#fff', 1, 100);
+      light.position.set(0, 2, 2);
+      scene.add(light);
+
+      // Создаем тень
+      const shadow = new THREE.Mesh(
+        new THREE.PlaneGeometry(5, 5),
+        new THREE.ShadowMaterial({ opacity: 0.5 })
+      );
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.position.y = -0.5;
+      shadow.receiveShadow = true;
+      scene.add(shadow);
+
+      // Добавляем отражения
+      const floorGeometry = new THREE.PlaneGeometry(5, 5);
+      const floorMaterial = new THREE.MeshStandardMaterial({
+        color: '#fff',
+        roughness: 0.5,
+      });
+      const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -0.5;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      const cube2 = new THREE.Mesh(
+        geometry1,
+        new THREE.MeshStandardMaterial({
+          color: '#0000ff',
+          roughness: 0.1,
+          metalness: 0.9,
+          envMap: renderer.outputEncoding,
+        })
+      );
+      cube2.position.set(0, 0, 2);
+      cube2.receiveShadow = true;
+      cube2.castShadow = true;
+      scene.add(cube2);
+
+      // Добавляем текстуры
+      const textureLoader = new THREE.TextureLoader();
+      const woodTexture = textureLoader.load('textures/wood.jpg');
+      woodTexture.wrapS = THREE.RepeatWrapping;
+      woodTexture.wrapT = THREE.RepeatWrapping;
+      woodTexture.repeat.set(5, 5);
+      const doorMaterial = new THREE.MeshStandardMaterial({ map: woodTexture });
+      doorMaterial.side = THREE.DoubleSide;
+      loader.load('models/door.glb', (gltf) => {
+        const door = gltf.scene.children[0];
+        door.position.set(0, -1, -2);
+        door.material = doorMaterial;
+      });
+    </script>
+  </body>
+</html>
